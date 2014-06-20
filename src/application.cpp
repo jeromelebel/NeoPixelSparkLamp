@@ -86,6 +86,7 @@ void setup()
     Serial.begin(115200);
     
     readBuffer(&version, sizeof(version), VERSION_ADDRESS);
+#ifdef SPARK_WLAN_ENABLE
     if (version == CURRENT_VERSION) {
         readBuffer(&intensity, sizeof(intensity), INTENSITY_ADDRESS);
         readBuffer(&timer, sizeof(timer), TIMER_ADDRESS);
@@ -95,6 +96,7 @@ void setup()
         version = CURRENT_VERSION;
         saveAllVariables();
     }
+#endif
     
     Serial.println("started!");
     Spark.function("setintensity", setIntensity);
