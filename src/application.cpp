@@ -11,7 +11,7 @@ typedef enum {
 
 int version = 1;
 int intensity = 255;
-int timer = 60;
+int timer = 240;
 int staticColor = 0xFFFFFF;
 LightMode lightMode = LightModeRainbow;
 
@@ -33,7 +33,7 @@ byte byteFromChar(char character);
 byte byteFromHexStringAtIndex(String color, int index);
 int setColor(String color);
 byte valueWithIntensity(byte value);
-uint32_t Wheel(byte WheelPos);
+uint32_t Wheel(short WheelPos);
 
 void blinkLED(unsigned int count, unsigned int mydelay)
 {
@@ -208,15 +208,15 @@ int setColor(String color)
 
 void rainbow(uint8_t wait)
 {
-    static uint16_t rotation = 0;
-    uint16_t i;
+    static short rotation = 0;
+    short i;
 
     for(i=0; i<strip.numPixels(); i++) {
-        strip.setPixelColor(i, Wheel((rotation + i) & 255));
+        strip.setPixelColor(i, Wheel((rotation + i) % 0x2FF));
     }
     strip.show();
     rotation++;
-    if (rotation > 255) {
+    if (rotation > 0x2FF) {
         rotation = 0;
     }
     delay(wait);
@@ -235,24 +235,24 @@ byte valueWithIntensity(byte value)
 
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
+uint32_t Wheel(short wheelPos)
 {
     byte grad;
     byte inverseGrad;
     
-    if(WheelPos < 85) {
-        grad = valueWithIntensity(WheelPos * 3);
-        inverseGrad = valueWithIntensity(255 - WheelPos * 3);
-        return strip.Color(grad, inverseGrad, 0);
-    } else if(WheelPos < 170) {
-        WheelPos -= 85;
-        grad = valueWithIntensity(WheelPos * 3);
-        inverseGrad = valueWithIntensity(255 - WheelPos * 3);
+    if(wheelPos > 0x1FF) {
+        grad = valueWithIntensity(wheelPos);
+        inverseGrad = valueWithIntensity(255 - wheelPos);
         return strip.Color(inverseGrad, 0, grad);
+    } else if(wheelPos > 0xFF) {
+        wheelPos = wheelPos & 0xFF;
+        grad = valueWithIntensity(wheelPos);
+        inverseGrad = valueWithIntensity(255 - wheelPos);
+        return strip.Color(grad, inverseGrad, 0);
     } else {
-        WheelPos -= 170;
-        grad = valueWithIntensity(WheelPos * 3);
-        inverseGrad = valueWithIntensity(255 - WheelPos * 3);
+        wheelPos = wheelPos & 0xFF;
+        grad = valueWithIntensity(wheelPos);
+        inverseGrad = valueWithIntensity(255 - wheelPos);
         return strip.Color(0, grad, inverseGrad);
     }
 }
